@@ -1,3 +1,6 @@
 /.DS_Store
 /config.json
 /.ipynb_checkpoints/
+/__pycache__/
+game_data.csv
+board.svg
