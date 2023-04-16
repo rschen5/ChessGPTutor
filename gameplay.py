@@ -1,29 +1,10 @@
 import chess
 from chess import Move
-import random
+import chess.svg
 import openai
 import numpy as np
 from search import minimax, alpha_beta_fail_hard, alpha_beta_fail_soft
-import re
-import json
-import chess.svg
-import time, os
-
-# from PyQt5.QtSvg import QSvgWidget
-# from PyQt5.QtWidgets import QApplication, QWidget
-# class MainWindow(QWidget):
-#     def __init__(self):
-#         super().__init__()
-
-#         self.setGeometry(100, 100, 800, 800)
-
-#         self.widgetSvg = QSvgWidget(parent=self)
-#         self.widgetSvg.setGeometry(10, 10, 720, 720)
-
-#         self.chessboard = chess.Board()
-
-#         self.chessboardSvg = chess.svg.board(self.chessboard).encode("UTF-8")
-#         self.widgetSvg.load(self.chessboardSvg)
+import random, re, json, time, os
 
 
 class RandomPlayer():
@@ -72,7 +53,6 @@ class AIPlayer():
         return Move.from_uci(current_move)
 
 
-# could also add human player for testing later
 class HumanPlayer():
     def __init__(self, color = True):
         self.color = color
@@ -100,7 +80,6 @@ class HumanPlayer():
             if move == "resign":
                 return None
             elif move == "display":
-                # https://stackoverflow.com/questions/61439815/how-to-display-an-svg-image-in-python
                 print('-----')
                 boardsvg = chess.svg.board(board, size=600, coordinates=True)
                 with open('board.svg', 'w') as outputfile:
@@ -108,11 +87,6 @@ class HumanPlayer():
                 print('Board written to board.svg')
                 time.sleep(0.1)
                 os.startfile('board.svg')
-                # app = QApplication([])
-                # window = MainWindow()
-                # window.show()
-                # app.exec()
-                # app.setQuitOnLastWindowClosed(app.exec())
 
             elif move == "tutor":
                 print('-----')
@@ -178,9 +152,7 @@ def get_ChatGPT_response(current_move, is_white, current_board_string):
     if is_white:
         current_color = "white"
 
-    comment_message = "Please comment on the quality of move {} for {}".format(current_move, current_color)    
-#     comment_message = "Please comment on the quality on this move {} that was just performed by {}".format(current_move, current_color)    
-#     comment_message = "Please comment on how the board state is favorable or not for {}".format(current_color)    
+    comment_message = "Please comment on the quality of move {} for {}".format(current_move, current_color)
 
     try_again_message = "Are you sure the move {} is invalid for the current board state? Please make sure your output contains the correct assignment of pieces".format(current_move)
 
@@ -216,60 +188,6 @@ def get_ChatGPT_response(current_move, is_white, current_board_string):
     print(response_string)
 
 
-def play_game_max_moves(player1, player2, board = None, max_moves = 0, per_side = True):
-    if board == None:
-        board = chess.Board()
-    game_moves = []
-
-    if per_side:
-        max_moves *= 2
-    print("============================ START GAME ============================")
-
-    while max_moves > 0 and not board.is_game_over(claim_draw=True):
-        if board.turn == player1.color:
-            print("White's turn")
-            move = player1.get_move(board)
-        else:
-            print("Black's turn")
-
-            move = player2.get_move(board)
-
-        print("current move: {}".format(str(move)))
-        current_move = board.turn
-        get_ChatGPT_response(move, current_move, str(board))
-
-        # update game variables.
-        game_moves.append(move.uci())
-        board.push(move)
-        max_moves -= 1
-
-        print(str(board))
-
-        print("================================================================")
-
-    if not board.is_game_over(claim_draw=True):
-        print("Game not over")
-    else:
-        outcome = board.outcome()
-        if outcome == None:
-            t = "DRAW"
-            w = None
-        else:
-            t = str(outcome.termination).split('.')[1]
-            w = who(outcome.winner)
-        print(f"Outcome: {t}\nWinner: {w}\nNumber of moves: {len(game_moves)}")
-    print("================================================================")
-    print("Moves:\tWHITE\tBLACK\n        -------------")
-    for i in range(int(np.ceil(len(game_moves) / 2))):
-        next_moves = game_moves[(i*2):(i*2 + 2)]
-        if len(next_moves) == 1:
-            print(f"{i+1:>6}  {next_moves[0]}")
-        else:
-            print(f"{i+1:>6}  {next_moves[0]}\t{next_moves[1]}")
-
-    return board
-
-
 def play_game(player1, player2, board = None):
     if board == None:
         board = chess.Board()
@@ -277,16 +195,15 @@ def play_game(player1, player2, board = None):
 
     resign = False
 
+    print("=================================== START GAME ===================================")
+
     while not board.is_game_over(claim_draw=True):
         print("--------------------------------")
         if isinstance(player2, HumanPlayer):
             print_board(board, False)
         else:
             print_board(board, True)
-        # app = QApplication([])
-        # window = MainWindow()
-        # window.show()
-        # app.exec()
+
         if board.turn == player1.color:
             move = player1.get_move(board)
             if move == None:
@@ -341,4 +258,6 @@ def play_game(player1, player2, board = None):
             print(f"{i+1:>6}  {next_moves[0]}\t{next_moves[1]}")
 
     f.close()
+
+    print("================================== GAME ENDED ==================================")
     print("Game data available at game_data.csv")
