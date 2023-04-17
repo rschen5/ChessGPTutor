@@ -1,17 +1,36 @@
 # ChessGPT
 Integrating ChatGPT into Chess for move explanations with Stockfish as the engine.
 
+## Instructions
+
+### Prerequisites:
+* Create an account with OpenAI
+* Download Stockfish here: https://stockfishchess.org/download/
+* Create your own `config.json` file. It should look like this:
+```
+{
+	"OPENAI_API_KEY": <your OpenAI API key>,
+	"STOCKFISH_PATH": <path to Stockfish executable>
+}
+```
+
 To run, create a conda environment:
-
+```
 conda create -n ChessEnv python=3.9
-
-run the following command:
-
+```
+Run the following command to get the proper requirements:
+```
 pip install -r requirements.txt
+```
 
-This will get you the proper requirements.
+### Running ChessGPT
+To run the command-line interface:
+```
+python chessGPT.py --side {white, black} --level {easy, hard}
+```
 
-You do need to create your own config.json file once you create an account with OpenAI.
+
+## Other
 
 Citation for GUI:
 
