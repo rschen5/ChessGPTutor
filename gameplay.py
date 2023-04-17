@@ -77,10 +77,11 @@ class HumanPlayer():
             print(' - "resign" to end game')
             print('Enter choice: ', end="")
             move = input().strip()
+            print('-----')
             if move == "resign":
                 return None
+
             elif move == "display":
-                print('-----')
                 boardsvg = chess.svg.board(board, size=600, coordinates=True)
                 with open('board.svg', 'w') as outputfile:
                     outputfile.write(boardsvg)
@@ -89,7 +90,6 @@ class HumanPlayer():
                 os.startfile('board.svg')
 
             elif move == "tutor":
-                print('-----')
                 move = self.tutor.get_move(board)
                 print(f"The tutor's suggested move is {move}")
                 get_ChatGPT_response(move, board.turn, str(board))
@@ -244,7 +244,7 @@ def play_game(player1, player2, board = None):
         w = who(outcome.winner)
     
     f = open("game_data.csv", "w")
-    f.write(f"{t},{w},{len(game_moves)}")
+    f.write(f"{t},{w},{len(game_moves)}\n")
 
     print("================================================================")
     print(f"Outcome: {t}\nWinner: {w}\nNumber of moves: {len(game_moves)}")
@@ -253,9 +253,11 @@ def play_game(player1, player2, board = None):
     for i in range(int(np.ceil(len(game_moves) / 2))):
         next_moves = game_moves[(i*2):(i*2 + 2)]
         if len(next_moves) == 1:
-            print(f"{i+1:>6}  {next_moves[0]}")
+            print(f"{i+1:>6}  {next_moves[0]}\n")
+            f.write(f"{next_moves[0]}")
         else:
             print(f"{i+1:>6}  {next_moves[0]}\t{next_moves[1]}")
+            f.write(f"{next_moves[0]},{next_moves[1]}\n")
 
     f.close()
 
