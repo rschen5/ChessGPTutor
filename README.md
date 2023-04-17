@@ -1,6 +1,10 @@
 # ChessGPT
 Integrating ChatGPT into Chess for move explanations with Stockfish as the engine.
 
+## Feedback form
+
+https://docs.google.com/forms/d/e/1FAIpQLSfCVMd_ZQ4gH_0IZCgYvv6H3ZkD-3RKyYfgP_5riiUQDOXdFA/viewform
+
 ## Instructions
 
 ### Prerequisites:
