@@ -16,7 +16,7 @@ import math
 # CITATION:
 # https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
 X = 1200
-Y = 1200
+Y = 900
 scrn = pygame.display.set_mode((X, Y))
 pygame.init()
 
@@ -32,6 +32,8 @@ b = chess.Board()
 print("Setting up the board")
 
 IMAGE_PATH = "./images/"
+
+BOARD_OFFSET = 50
 
 #load piece images
 pieces = {'p': pygame.image.load(IMAGE_PATH + 'bP.png').convert_alpha(),
@@ -55,18 +57,59 @@ def update(scrn,board):
     '''
     updates the screen basis the board class
     '''
+    # create a font object.
+    # 1st parameter is the font file
+    # which is present in pygame.
+    # 2nd parameter is size of the font
+    font = pygame.font.Font('freesansbold.ttf', 32)
+
+    CHARACTER_LIST = [' A ',' B ',' C ',' D ',' E ',' F ',' G ',' H ']
+    # NUMBER_LIST = ['1','2','3','4','5','6','7','8']
+    NUMBER_LIST = [' 8 ', ' 7 ', ' 6 ', ' 5 ', ' 4 ',' 3 ',' 2 ',' 1 ']
+
     
     for i in range(64):
         piece = board.piece_at(i)
         if piece == None:
             pass
         else:
-            scrn.blit(pieces[str(piece)],((i%8)*100,700-(i//8)*100))
+            scrn.blit(pieces[str(piece)],(BOARD_OFFSET+(i%8)*100,BOARD_OFFSET+700-(i//8)*100))
     
+    # draw letters and numbers
+    for i in range(8):
+
+        # create a text surface object,
+        # on which text is drawn on it.
+        text_letter = font.render(CHARACTER_LIST[i], True, BLACK, WHITE)
+        
+        # create a rectangular object for the
+        # text surface object
+        textLetterRect = text_letter.get_rect()
+        
+        # set the center of the rectangular object.
+        textLetterRect.center = (2*BOARD_OFFSET+ i*100 , int(BOARD_OFFSET/2) )
+
+        scrn.blit(text_letter, textLetterRect)
+
+        # create a text surface object,
+        # on which text is drawn on it.
+        text_number = font.render(NUMBER_LIST[i], True, BLACK, WHITE)
+        
+        # create a rectangular object for the
+        # text surface object
+        textNumberRect = text_number.get_rect()
+        
+        # set the center of the rectangular object.
+        textNumberRect.center = (int(BOARD_OFFSET/2), 2*BOARD_OFFSET+ i*100)
+
+        scrn.blit(text_number, textNumberRect)
+
+
+    # draw lines
     for i in range(7):
         i=i+1
-        pygame.draw.line(scrn,WHITE,(0,i*100),(800,i*100))
-        pygame.draw.line(scrn,WHITE,(i*100,0),(i*100,800))
+        pygame.draw.line(scrn,WHITE,(BOARD_OFFSET+0,BOARD_OFFSET+i*100),(BOARD_OFFSET+800,BOARD_OFFSET+i*100))
+        pygame.draw.line(scrn,WHITE,(BOARD_OFFSET+i*100,BOARD_OFFSET),(BOARD_OFFSET+i*100,BOARD_OFFSET+800))
 
     pygame.display.flip()
 
@@ -282,8 +325,73 @@ def play_game(player1, player2, board = None):
         else:
             print_board(board, True)
 
+
         if board.turn == player1.color:
             move = player1.get_move(board)
+
+            # move = None
+
+            # while move is None:
+            #     for event in pygame.event.get():
+            #         # if event object type is QUIT
+            #         # then quitting the pygame
+            #         # and program both.
+            #         if event.type == pygame.QUIT:
+            #             status = False
+
+            #         # if mouse clicked
+            #         if event.type == pygame.MOUSEBUTTONDOWN:
+            #             #remove previous highlights
+            #             scrn.fill(GREY)
+            #             #get position of mouse
+            #             pos = pygame.mouse.get_pos()
+
+            #             #find which square was clicked and index of it
+            #             square = (math.floor((pos[0]-BOARD_OFFSET)/100),math.floor((pos[1]-BOARD_OFFSET)/100))
+            #             index = (7-square[1])*8+(square[0])
+            #             print(index)
+                        
+            #             # if we are moving a piece
+            #             if index in index_moves: 
+                            
+            #                 move = moves[index_moves.index(index)]
+
+            #                 print(move)
+                            
+            #                 #reset index and moves
+            #                 index=None
+            #                 index_moves = []
+                            
+                            
+            #             # show possible moves
+            #             else:
+            #                 #check the square that is clicked
+            #                 piece = board.piece_at(index)
+            #                 #if empty pass
+            #                 if piece == None:
+                                
+            #                     pass
+            #                 else:
+                                
+            #                     #figure out what moves this piece can make
+            #                     all_moves = list(board.legal_moves)
+            #                     moves = []
+            #                     for m in all_moves:
+            #                         if m.from_square == index:
+                                        
+            #                             moves.append(m)
+
+            #                             t = m.to_square
+
+            #                             TX1 = 100*(t%8)+BOARD_OFFSET
+            #                             TY1 = 100*(7-t//8)+BOARD_OFFSET
+
+            #                             #highlight squares it can move to
+            #                             pygame.draw.rect(scrn,BLUE,pygame.Rect(TX1,TY1,100,100),5)
+            #                     update(scrn,board)
+
+            #                     index_moves = [a.to_square for a in moves]
+
             if move == None:
                 print("Game ended.")
                 resign = True
