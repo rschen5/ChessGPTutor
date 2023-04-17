@@ -15,7 +15,7 @@ import math
 # blog for gui:
 # CITATION:
 # https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
-X = 1200
+X = 1500
 Y = 900
 scrn = pygame.display.set_mode((X, Y))
 pygame.init()
@@ -53,7 +53,52 @@ pieces = {'p': pygame.image.load(IMAGE_PATH + 'bP.png').convert_alpha(),
 
 # Board
 
-def update(scrn,board):
+# text wrap function:
+
+# https://www.pygame.org/wiki/TextWrap
+
+# draw some text into an area of a surface
+# automatically wraps words
+# returns any text that didn't get blitted
+def drawText(surface, text, color, rect, font, aa, bkg):
+    rect = pygame.Rect(rect)
+    y = rect.top
+    lineSpacing = -2
+
+    # get the height of the font
+    fontHeight = font.size("Tg")[1]
+
+    while text:
+        i = 1
+
+        # determine if the row of text will be outside our area
+        if y + fontHeight > rect.bottom:
+            break
+
+        # determine maximum width of line
+        while font.size(text[:i])[0] < rect.width and i < len(text):
+            i += 1
+
+        # if we've wrapped the text, then adjust the wrap to the last word      
+        if i < len(text): 
+            i = text.rfind(" ", 0, i) + 1
+
+        # render the line and blit it to the surface
+        if bkg:
+            image = font.render(text[:i], True, color, bkg)
+            image.set_colorkey(bkg)
+        else:
+            image = font.render(text[:i], aa, color)
+
+        surface.blit(image, (rect.left, y))
+        y += fontHeight + lineSpacing
+
+        # remove the text we just blitted
+        text = text[i:]
+
+    return text
+
+def update(scrn,board,suggested_move,chatGPT_text):
     '''
     updates the screen basis the board class
     '''
@@ -104,12 +149,39 @@ def update(scrn,board):
 
         scrn.blit(text_number, textNumberRect)
 
-
     # draw lines
     for i in range(7):
         i=i+1
         pygame.draw.line(scrn,WHITE,(BOARD_OFFSET+0,BOARD_OFFSET+i*100),(BOARD_OFFSET+800,BOARD_OFFSET+i*100))
         pygame.draw.line(scrn,WHITE,(BOARD_OFFSET+i*100,BOARD_OFFSET),(BOARD_OFFSET+i*100,BOARD_OFFSET+800))
+
+    # create a text surface object,
+    # on which text is drawn on it.
+
+    stockfish_text = "Stockfish suggests {}".format(suggested_move)
+    # text_letter = font.render("Stockfish suggests {}".format(suggested_move), True, BLACK, WHITE)
+    
+    # # create a rectangular object for the
+    # # text surface object
+    # textLetterRect = text_letter.get_rect()
+    
+    # # set the center of the rectangular object.
+    # textLetterRect.center = (2*BOARD_OFFSET+ 10*100 , int(BOARD_OFFSET/2) )
+
+    # scrn.blit(text_letter, textLetterRect)
+
+    text = drawText(scrn, stockfish_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2),500,200), font, True, None)
+    print(text)
+
+    intro_text = "ChatGPT's commentary:"
+
+    text = drawText(scrn, intro_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2)+BOARD_OFFSET,500,200), font, True, None)
+    print(text)
+
+    chatGPT_text = "{}".format(chatGPT_text)
+
+    text = drawText(scrn, chatGPT_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2)+BOARD_OFFSET*2,500,800), font, True, None)
+    print(text)
 
     pygame.display.flip()
 
@@ -280,9 +352,10 @@ def get_ChatGPT_response(current_move, is_white, current_board_string):
 
     message = response.choices[0]['message']
 
-    response_string = "{}: {}".format("Tutor commentary", message['content'])
+    response_string = "{}".format(message['content'])
 
-    if "not possible" in response_string or "illegal" in response_string:
+    if "not possible" in response_string or "illegal" in response_string or "not legal" in response_string or "not valid" in response_string or "invalid" in response_string:
+        # response_string = "I'm having a hard time understanding the board right now"
         response = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
         messages=[
@@ -294,9 +367,11 @@ def get_ChatGPT_response(current_move, is_white, current_board_string):
         )
 
         message = response.choices[0]['message']
-        response_string = "{}: {}".format("Tutor commentary", message['content'])
+        response_string = "{}".format(message['content'])
 
     print(response_string)
+
+    return response_string
 
 
 def play_game(player1, player2, board = None):
@@ -315,7 +390,9 @@ def play_game(player1, player2, board = None):
     
     #variable to be used later
     index_moves = []
-    update(scrn,board)
+    suggested_move = "d2d4"
+    chatGPT_text = ""
+    update(scrn,board,suggested_move,chatGPT_text)
 
     while not board.is_game_over(claim_draw=True):
 
@@ -327,91 +404,98 @@ def play_game(player1, player2, board = None):
 
 
         if board.turn == player1.color:
-            move = player1.get_move(board)
+            move = player1.tutor.get_move(board)
+            try:
+                chatGPT_text = get_ChatGPT_response(move, board.turn, str(board))
+            except:
+                chatGPT_text = "too many requests - please wait a few moves before trying again"
+            suggested_move = "{}".format(move)
+            scrn.fill(GREY)
 
-            # move = None
+            update(scrn,board,suggested_move,chatGPT_text)
 
-            # while move is None:
-            #     for event in pygame.event.get():
-            #         # if event object type is QUIT
-            #         # then quitting the pygame
-            #         # and program both.
-            #         if event.type == pygame.QUIT:
-            #             status = False
+            move = None
 
-            #         # if mouse clicked
-            #         if event.type == pygame.MOUSEBUTTONDOWN:
-            #             #remove previous highlights
-            #             scrn.fill(GREY)
-            #             #get position of mouse
-            #             pos = pygame.mouse.get_pos()
+            while move is None:
+                for event in pygame.event.get():
+                    # if event object type is QUIT
+                    # then quitting the pygame
+                    # and program both.
+                    if event.type == pygame.QUIT:
+                        status = False
 
-            #             #find which square was clicked and index of it
-            #             square = (math.floor((pos[0]-BOARD_OFFSET)/100),math.floor((pos[1]-BOARD_OFFSET)/100))
-            #             index = (7-square[1])*8+(square[0])
-            #             print(index)
+                    # if mouse clicked
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        #remove previous highlights
+                        scrn.fill(GREY)
+                        #get position of mouse
+                        pos = pygame.mouse.get_pos()
+
+                        #find which square was clicked and index of it
+                        square = (math.floor((pos[0]-BOARD_OFFSET)/100),math.floor((pos[1]-BOARD_OFFSET)/100))
+                        index = (7-square[1])*8+(square[0])
+                        print(index)
                         
-            #             # if we are moving a piece
-            #             if index in index_moves: 
+                        # if we are moving a piece
+                        if index in index_moves: 
                             
-            #                 move = moves[index_moves.index(index)]
+                            move = moves[index_moves.index(index)]
 
-            #                 print(move)
+                            print(move)
                             
-            #                 #reset index and moves
-            #                 index=None
-            #                 index_moves = []
+                            #reset index and moves
+                            index=None
+                            index_moves = []
                             
                             
-            #             # show possible moves
-            #             else:
-            #                 #check the square that is clicked
-            #                 piece = board.piece_at(index)
-            #                 #if empty pass
-            #                 if piece == None:
+                        # show possible moves
+                        else:
+                            #check the square that is clicked
+                            piece = board.piece_at(index)
+                            #if empty pass
+                            if piece == None:
                                 
-            #                     pass
-            #                 else:
+                                pass
+                            else:
                                 
-            #                     #figure out what moves this piece can make
-            #                     all_moves = list(board.legal_moves)
-            #                     moves = []
-            #                     for m in all_moves:
-            #                         if m.from_square == index:
+                                #figure out what moves this piece can make
+                                all_moves = list(board.legal_moves)
+                                moves = []
+                                for m in all_moves:
+                                    if m.from_square == index:
                                         
-            #                             moves.append(m)
+                                        moves.append(m)
 
-            #                             t = m.to_square
+                                        t = m.to_square
 
-            #                             TX1 = 100*(t%8)+BOARD_OFFSET
-            #                             TY1 = 100*(7-t//8)+BOARD_OFFSET
+                                        TX1 = 100*(t%8)+BOARD_OFFSET
+                                        TY1 = 100*(7-t//8)+BOARD_OFFSET
 
-            #                             #highlight squares it can move to
-            #                             pygame.draw.rect(scrn,BLUE,pygame.Rect(TX1,TY1,100,100),5)
-            #                     update(scrn,board)
+                                        #highlight squares it can move to
+                                        pygame.draw.rect(scrn,BLUE,pygame.Rect(TX1,TY1,100,100),5)
+                                update(scrn,board,suggested_move,chatGPT_text)
 
-            #                     index_moves = [a.to_square for a in moves]
+                                index_moves = [a.to_square for a in moves]
 
             if move == None:
                 print("Game ended.")
-                resign = True
-                break
+                # resign = True
+                # break
             if not isinstance(player1, HumanPlayer):
                 print(f"White move: {move.uci()}")
         else:
             move = player2.get_move(board)
             if move == None:
                 print("Game ended.")
-                resign = True
-                break
+                # resign = True
+                # break
             if not isinstance(player2, HumanPlayer):
                 print(f"Black move: {move.uci()}")
         game_moves.append(move.uci())
         board.push(move)
         scrn.fill(GREY)
-        update(scrn,board)
+        update(scrn,board,suggested_move,chatGPT_text)
 
-     
     # deactivates the pygame library
         if board.outcome() != None:
             print(board.outcome())
