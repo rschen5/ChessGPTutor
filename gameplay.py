@@ -77,6 +77,11 @@ class HumanPlayer():
             print(' - "resign" to end game')
             print('Enter choice: ', end="")
             move = input().strip()
+
+            if move[0:2] == move[2:4]:
+                print([move[0:2], move[2:4]])
+                return chess.Move.null()
+
             print('-----')
             if move == "resign":
                 return None
