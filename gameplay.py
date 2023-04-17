@@ -6,6 +6,69 @@ import numpy as np
 from search import minimax, alpha_beta_fail_hard, alpha_beta_fail_soft
 import random, re, json, time, os
 
+# importing required librarys
+import pygame
+import chess
+import math
+#initialise display
+
+# blog for gui:
+# CITATION:
+# https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
+X = 1200
+Y = 1200
+scrn = pygame.display.set_mode((X, Y))
+pygame.init()
+
+#basic colours
+WHITE = (255, 255, 255)
+GREY = (128, 128, 128)
+YELLOW = (204, 204, 0)
+BLUE = (50, 255, 255)
+BLACK = (0, 0, 0)
+
+#initialise chess board
+b = chess.Board()
+print("Setting up the board")
+
+IMAGE_PATH = "./images/"
+
+#load piece images
+pieces = {'p': pygame.image.load(IMAGE_PATH + 'bP.png').convert_alpha(),
+          'n': pygame.image.load(IMAGE_PATH + 'bN.png').convert_alpha(),
+          'b': pygame.image.load(IMAGE_PATH + 'bB.png').convert_alpha(),
+          'r': pygame.image.load(IMAGE_PATH + 'bR.png').convert_alpha(),
+          'q': pygame.image.load(IMAGE_PATH + 'bQ.png').convert_alpha(),
+          'k': pygame.image.load(IMAGE_PATH + 'bK.png').convert_alpha(),
+          'P': pygame.image.load(IMAGE_PATH + 'wP.png').convert_alpha(),
+          'N': pygame.image.load(IMAGE_PATH + 'wN.png').convert_alpha(),
+          'B': pygame.image.load(IMAGE_PATH + 'wB.png').convert_alpha(),
+          'R': pygame.image.load(IMAGE_PATH + 'wR.png').convert_alpha(),
+          'Q': pygame.image.load(IMAGE_PATH + 'wQ.png').convert_alpha(),
+          'K': pygame.image.load(IMAGE_PATH + 'wK.png').convert_alpha(),
+          }
+
+
+# Board
+
+def update(scrn,board):
+    '''
+    updates the screen basis the board class
+    '''
+    
+    for i in range(64):
+        piece = board.piece_at(i)
+        if piece == None:
+            pass
+        else:
+            scrn.blit(pieces[str(piece)],((i%8)*100,700-(i//8)*100))
+    
+    for i in range(7):
+        i=i+1
+        pygame.draw.line(scrn,WHITE,(0,i*100),(800,i*100))
+        pygame.draw.line(scrn,WHITE,(i*100,0),(i*100,800))
+
+    pygame.display.flip()
 
 class RandomPlayer():
     def __init__(self, color = True):
@@ -202,7 +265,17 @@ def play_game(player1, player2, board = None):
 
     print("=================================== START GAME ===================================")
 
+        #make background black
+    scrn.fill(GREY)
+    #name window
+    pygame.display.set_caption('Chess')
+    
+    #variable to be used later
+    index_moves = []
+    update(scrn,board)
+
     while not board.is_game_over(claim_draw=True):
+
         print("--------------------------------")
         if isinstance(player2, HumanPlayer):
             print_board(board, False)
@@ -227,6 +300,15 @@ def play_game(player1, player2, board = None):
                 print(f"Black move: {move.uci()}")
         game_moves.append(move.uci())
         board.push(move)
+        scrn.fill(GREY)
+        update(scrn,board)
+
+     
+    # deactivates the pygame library
+        if board.outcome() != None:
+            print(board.outcome())
+            print(board)
+    pygame.quit()
 
     if isinstance(player1, HumanPlayer):
         player1.tutor.close_engine()
