@@ -8,7 +8,7 @@ import chess.engine
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--side", help="which side to play as; options: {white, black}", type=str)
-parser.add_argument("--level", help="level of difficulty of AI opponent; options {easy, hard}", type=str)
+parser.add_argument("--level", help="level of difficulty of AI opponent; options {easy, medium, hard}", type=str)
 args = parser.parse_args()
 
 
@@ -22,20 +22,24 @@ if args.side == "white":
 
     if args.level == "easy":
         p2 = gameplay.AIPlayer(color = False, algo = "AB_fail_soft", depth=3)
+    elif args.level == "medium":
+        p2 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False, depth = 4)
     elif args.level == "hard":
         p2 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False)
     else:
-        exit('Invalid level. Please enter "easy" or "hard"')
+        exit('Invalid level. Please enter "easy", "medium", or "hard"')
 
 elif args.side == "black":
     p2 = gameplay.HumanPlayer(color = False)
 
     if args.level == "easy":
         p1 = gameplay.AIPlayer(color = True, algo = "AB_fail_soft", depth=3)
+    elif args.level == "medium":
+        p1 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True, depth = 4)
     elif args.level == "hard":
         p1 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True)
     else:
-        exit('Invalid level. Please enter "easy" or "hard"')
+        exit('Invalid level. Please enter "easy", "medium", or "hard"')
 
 else:
     exit('Invalid player. Please enter "white" or "black"')

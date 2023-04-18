@@ -30,7 +30,7 @@ pip install -r requirements.txt
 ### Running ChessGPT
 To run the command-line interface:
 ```
-python chessGPT.py --side {white, black} --level {easy, hard}
+python chessGPT.py --side {white, black} --level {easy, medium, hard}
 ```
 
 
