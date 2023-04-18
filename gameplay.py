@@ -4,7 +4,7 @@ import chess.svg
 import openai
 import numpy as np
 from search import minimax, alpha_beta_fail_hard, alpha_beta_fail_soft
-import random, re, json, time, os
+import random, re, json, time, os, sys
 
 # importing required librarys
 import pygame
@@ -158,8 +158,8 @@ def update(scrn,board,suggested_move,chatGPT_text):
     # create a text surface object,
     # on which text is drawn on it.
 
-    stockfish_text = "Stockfish suggests {}".format(suggested_move)
-    text_letter = font.render("Stockfish suggests {}".format(suggested_move), True, BLACK, WHITE)
+    stockfish_text = "Stockfish suggestion: {}".format(suggested_move)
+    text_letter = font.render(stockfish_text, True, BLACK, WHITE)
     
     # create a rectangular object for the
     # text surface object
@@ -391,7 +391,7 @@ def play_game(player1, player2, board = None):
     
     #variable to be used later
     index_moves = []
-    suggested_move = "d2d4"
+    suggested_move = ""
     chatGPT_text = ""
     update(scrn,board,suggested_move,chatGPT_text)
 
@@ -403,15 +403,18 @@ def play_game(player1, player2, board = None):
         else:
             print_board(board, True)
 
-
         if board.turn == player1.color:
-            # move = player1.tget_move(board)
+            current_player = player1
+        else:
+            current_player = player2
 
-            move = player1.tutor.get_move(board)
+        if isinstance(current_player, HumanPlayer):
+
+            move = current_player.tutor.get_move(board)
             try:
                 chatGPT_text = get_ChatGPT_response(move, board.turn, str(board))
             except:
-                chatGPT_text = "too many requests - please wait a few moves before trying again"
+                chatGPT_text = "Too many requests - please wait a few moves before trying again"
             suggested_move = "{}".format(move)
             scrn.fill(GREY)
 
@@ -425,7 +428,16 @@ def play_game(player1, player2, board = None):
                     # then quitting the pygame
                     # and program both.
                     if event.type == pygame.QUIT:
-                        status = False
+                        pygame.quit()
+                        if isinstance(player1, HumanPlayer):
+                            player1.tutor.close_engine()
+                        if isinstance(player2, HumanPlayer):
+                            player2.tutor.close_engine()
+                        if isinstance(player1, StockfishPlayer):
+                            player1.close_engine()
+                        if isinstance(player2, StockfishPlayer):
+                            player2.close_engine()
+                        sys.exit(0)
 
                     # if mouse clicked
                     if event.type == pygame.MOUSEBUTTONDOWN:
@@ -484,16 +496,13 @@ def play_game(player1, player2, board = None):
                 print("Game ended.")
                 resign = True
                 break
-            if not isinstance(player1, HumanPlayer):
-                print(f"White move: {move.uci()}")
         else:
-            move = player2.get_move(board)
+            move = current_player.get_move(board)
             if move == None:
                 print("Game ended.")
                 resign = True
                 break
-            if not isinstance(player2, HumanPlayer):
-                print(f"Black move: {move.uci()}")
+            print(f"{who(current_player.color)} move: {move.uci()}")
         game_moves.append(move.uci())
         board.push(move)
         scrn.fill(GREY)
