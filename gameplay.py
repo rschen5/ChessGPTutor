@@ -17,7 +17,7 @@ import math
 # https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
 X = 1400
 Y = 900
-scrn = pygame.display.set_mode((X, Y))
+scrn = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
 pygame.init()
 
 #basic colours
