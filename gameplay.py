@@ -96,15 +96,19 @@ class HumanPlayer():
 
             elif move == "tutor":
                 move = self.tutor.get_move(board)
-                print(f"The tutor's suggested move is {move}")
+                print("The tutor's suggested move is {}".format(move))
                 get_ChatGPT_response(move, board.turn, str(board))
 
             else:
-                move = Move.from_uci(move)
+                try:
+                    move = Move.from_uci(move)
+                except:
+                    print("Incorrect input format\n---------------")
+                    continue
                 if move in list(board.legal_moves):
                     break
                 else:
-                    print(f"{move} is not a legal move.")
+                    print("{} is not a legal move.".format(move))
             print('---------------')
         return move
 
@@ -130,7 +134,7 @@ def print_board(board, is_white):
 
     for i in range(1, 9):
         if str(i) in fen_str:
-            fen_str = re.sub(f"{i}", "." * i, fen_str)
+            fen_str = re.sub(str(i), "." * i, fen_str)
     
     pieces = [list(s) for s in fen_str.split('/')]
     pieces = [list(map(__convert, l)) for l in pieces]
@@ -139,13 +143,13 @@ def print_board(board, is_white):
 
     if is_white:
         for i in range(8):
-            print(f"{8-i} | {' '.join(pieces[i])}")
-        print(f"  -------------------------")
+            print("{} | {}".format(8-i, ' '.join(pieces[i])))
+        print("  -------------------------")
         print("    a  b  c  d  e  f  g  h\n")
     else:
         for i in range(8):
-            print(f"{i+1} | {' '.join(pieces[7-i][::-1])}")
-        print(f"  -------------------------")
+            print("{} | {}".format(i+1, ' '.join(pieces[7-i][::-1])))
+        print("  -------------------------")
         print("    h  g  f  e  d  c  b  a\n")
 
 
@@ -216,7 +220,7 @@ def play_game(player1, player2, board = None):
                 resign = True
                 break
             if not isinstance(player1, HumanPlayer):
-                print(f"White move: {move.uci()}")
+                print("White move: {}".format(move.uci()))
         else:
             move = player2.get_move(board)
             if move == None:
@@ -224,7 +228,7 @@ def play_game(player1, player2, board = None):
                 resign = True
                 break
             if not isinstance(player2, HumanPlayer):
-                print(f"Black move: {move.uci()}")
+                print("Black move: {}".format(move.uci()))
         game_moves.append(move.uci())
         board.push(move)
 
@@ -249,20 +253,20 @@ def play_game(player1, player2, board = None):
         w = who(outcome.winner)
     
     f = open("game_data.csv", "w")
-    f.write(f"{t},{w},{len(game_moves)}\n")
+    f.write("{},{},{}\n".format(t, w, len(game_moves)))
 
     print("================================================================")
-    print(f"Outcome: {t}\nWinner: {w}\nNumber of moves: {len(game_moves)}")
+    print("Outcome: {}\nWinner: {}\nNumber of moves: {}".format(t, w, len(game_moves)))
     print("================================================================")
     print("Moves:\tWHITE\tBLACK\n        -------------")
     for i in range(int(np.ceil(len(game_moves) / 2))):
         next_moves = game_moves[(i*2):(i*2 + 2)]
         if len(next_moves) == 1:
-            print(f"{i+1:>6}  {next_moves[0]}\n")
-            f.write(f"{next_moves[0]}")
+            print("{:>6}  {}\n".format(i+1, next_moves[0]))
+            f.write("{}".format(next_moves[0]))
         else:
-            print(f"{i+1:>6}  {next_moves[0]}\t{next_moves[1]}")
-            f.write(f"{next_moves[0]},{next_moves[1]}\n")
+            print("{:>6}  {}\t{}".format(i+1, next_moves[0], next_moves[1]))
+            f.write("{next_moves[0]},{next_moves[1]}\n")
 
     f.close()
 

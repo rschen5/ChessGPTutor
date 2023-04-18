@@ -44,7 +44,7 @@ else:
 openai.api_key = data['OPENAI_API_KEY']
 model_engine = "gpt-3.5-turbo"
 
-intro_message = f"You are a chess tutor for a beginner player playing as {args.side}."
+intro_message = "You are a chess tutor for a beginner player playing as {}.".format(args.side)
 
 response = openai.ChatCompletion.create(
     model=model_engine,
@@ -56,6 +56,6 @@ response = openai.ChatCompletion.create(
 )
 
 message = response.choices[0]['message']
-print(f"Chess tutor for {args.side} player is ready. Have fun!")
+print("Chess tutor for {} player is ready. Have fun!".format(args.side))
 
 gameplay.play_game(p1, p2)
