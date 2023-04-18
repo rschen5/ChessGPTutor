@@ -34,13 +34,7 @@ python chessGPT.py --side {white, black} --level {easy, medium, hard}
 ```
 
 
-## Other
-
-Citation for GUI:
-
-https://github.com/fsmosca/Python-Easy-Chess-GUI/blob/master/python_easy_chess_gui.py
-
-Funny ChatGPT quotes:
+## Funny ChatGPT quotes
 
 ChatGPT commentary: The move f3e5 for White is not possible as there is a piece obstructing the f3 square.
 
