@@ -100,10 +100,12 @@ def drawText(surface, text, color, rect, font, aa, bkg):
 
     return text
 
-def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,latest_move = False):
+def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares = None, latest_move = False):
     '''
     updates the screen basis the board class
     '''
+    scrn.fill(BACKGROUND)
+
     # create a font object.
     # 1st parameter is the font file
     # which is present in pygame.
@@ -116,6 +118,9 @@ def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,lates
 
     # draw border
     pygame.draw.rect(scrn, BOARD_OUTLINE, pygame.Rect(BOARD_OFFSET-6, BOARD_OFFSET-6, 812, 812), 5)
+
+    if human_black:
+        board = board.transform(chess.flip_vertical).transform(chess.flip_horizontal)
 
     dark_square = True
 
@@ -140,7 +145,10 @@ def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,lates
 
         # create a text surface object,
         # on which text is drawn on it.
-        text_letter = font.render(CHARACTER_LIST[i], True, BLACK, WHITE)
+        if human_black:
+            text_letter = font.render(CHARACTER_LIST[7-i], True, BLACK, WHITE)
+        else:
+            text_letter = font.render(CHARACTER_LIST[i], True, BLACK, WHITE)
         
         # create a rectangular object for the
         # text surface object
@@ -153,7 +161,10 @@ def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,lates
 
         # create a text surface object,
         # on which text is drawn on it.
-        text_number = font.render(NUMBER_LIST[i], True, BLACK, WHITE)
+        if human_black:
+            text_number = font.render(NUMBER_LIST[7-i], True, BLACK, WHITE)
+        else:
+            text_number = font.render(NUMBER_LIST[i], True, BLACK, WHITE)
         
         # create a rectangular object for the
         # text surface object
@@ -213,6 +224,13 @@ def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,lates
 
         text = drawText(scrn, chatGPT_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2)+BOARD_OFFSET*3,500,800), font, True, None)
         print(text)
+    
+    else:
+
+        sleep_text = "Opponent is thinking..."
+
+        text = drawText(scrn, sleep_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2)+BOARD_OFFSET,500,200), font, True, None)
+        print(text)
 
     pygame.display.flip()
 
@@ -230,7 +248,9 @@ class StockfishPlayer():
         self.engine = chess.engine.SimpleEngine.popen_uci(path)
         self.limit = chess.engine.Limit(time=time_limit, depth=depth)
     
-    def get_move(self, board):
+    def get_move(self, board, opponent=False):
+        if opponent:
+            time.sleep(10)
         result = self.engine.play(board, self.limit)
         return result.move
     
@@ -406,7 +426,7 @@ def get_ChatGPT_response(current_move, is_white, current_board_string):
     return response_string
 
 
-def play_game(player1, player2, board = None):
+def play_game(player1, player2, human_black, board = None):
     if board == None:
         board = chess.Board()
     game_moves = []
@@ -415,17 +435,19 @@ def play_game(player1, player2, board = None):
 
     print("=================================== START GAME ===================================")
 
-        #make background black
-    scrn.fill(BACKGROUND)
     #name window
     pygame.display.set_caption('Chess')
     
     #variable to be used later
     index_moves = []
-    suggested_move = ""
-    chatGPT_text = ""
+    if human_black:
+        suggested_move = None
+        chatGPT_text = None
+    else:
+        suggested_move = ""
+        chatGPT_text = ""
     move_coords = []
-    update(scrn,board,suggested_move,chatGPT_text)
+    update(scrn, board, suggested_move, chatGPT_text, human_black)
 
     while not board.is_game_over(claim_draw=True):
 
@@ -448,9 +470,8 @@ def play_game(player1, player2, board = None):
             except:
                 chatGPT_text = "ChatGPT has received too many requests. Commentary will resume in a couple moves."
             suggested_move = "{}".format(move)
-            scrn.fill(BACKGROUND)
 
-            update(scrn,board,suggested_move,chatGPT_text,move_coords,latest_move=True)
+            update(scrn, board, suggested_move, chatGPT_text, human_black, move_coords, latest_move=True)
 
             move = None
 
@@ -473,13 +494,14 @@ def play_game(player1, player2, board = None):
 
                     # if mouse clicked
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        #remove previous highlights
-                        scrn.fill(BACKGROUND)
                         #get position of mouse
                         pos = pygame.mouse.get_pos()
 
                         #find which square was clicked and index of it
-                        square = (math.floor((pos[0]-BOARD_OFFSET)/100),math.floor((pos[1]-BOARD_OFFSET)/100))
+                        if human_black:
+                            square = (7 - math.floor((pos[0]-BOARD_OFFSET)/100), 7 - math.floor((pos[1]-BOARD_OFFSET)/100))
+                        else:
+                            square = (math.floor((pos[0]-BOARD_OFFSET)/100), math.floor((pos[1]-BOARD_OFFSET)/100))
                         if square[0] < 0 or square[0] > 7 or square[1] < 0 or square[1] > 7:
                             continue
 
@@ -518,6 +540,8 @@ def play_game(player1, player2, board = None):
                                         moves.append(m)
 
                                         t = m.to_square
+                                        if human_black:
+                                            t = 63 - t
 
                                         TX1 = 100*(t%8)+BOARD_OFFSET
                                         TY1 = 100*(7-t//8)+BOARD_OFFSET
@@ -525,7 +549,7 @@ def play_game(player1, player2, board = None):
                                         #highlight squares it can move to
                                         move_coords.append((TX1, TY1))
 
-                                update(scrn,board,suggested_move,chatGPT_text,move_coords)
+                                update(scrn, board, suggested_move, chatGPT_text, human_black, move_coords)
 
                                 index_moves = [a.to_square for a in moves]
             
@@ -537,7 +561,7 @@ def play_game(player1, player2, board = None):
                 resign = True
                 break
         else:
-            move = current_player.get_move(board)
+            move = current_player.get_move(board, opponent=True)
             if move == None:
                 print("Game ended.")
                 resign = True
@@ -551,10 +575,11 @@ def play_game(player1, player2, board = None):
         board.push(move)
 
         square_num = move.to_square
+        if human_black:
+            square_num = 63 - square_num
         move_coords = [(BOARD_OFFSET + 100 * chess.square_file(square_num), BOARD_OFFSET + 100 * (7 - chess.square_rank(square_num)))]
 
-        scrn.fill(BACKGROUND)
-        update(scrn,board,suggested_move,chatGPT_text,move_coords,latest_move = True)
+        update(scrn, board, suggested_move, chatGPT_text, human_black, move_coords, latest_move = True)
 
         if board.outcome() != None:
             print(board.outcome())

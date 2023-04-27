@@ -1,10 +1,5 @@
-import evaluation
-import search
-import gameplay
 import json, argparse, openai
-import chess
 import chess.engine
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--side", help="which side to play as; options: {white, black}", type=str)
@@ -16,33 +11,35 @@ f = open("./config.json")
 data = json.load(f)
 f.close()
 
+if args.side not in ["white","black"]:
+    exit('Invalid player. Please enter "white" or "black"')
+elif args.level not in ["easy","medium","hard"]:
+    exit('Invalid level. Please enter "easy", "medium", or "hard"')
+
+
+import gameplay
 
 if args.side == "white":
+    human_black = False
     p1 = gameplay.HumanPlayer(color = True)
 
     if args.level == "easy":
         p2 = gameplay.AIPlayer(color = False, algo = "AB_fail_soft", depth=3)
     elif args.level == "medium":
         p2 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False, depth = 4)
-    elif args.level == "hard":
-        p2 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False)
     else:
-        exit('Invalid level. Please enter "easy", "medium", or "hard"')
+        p2 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False)
 
-elif args.side == "black":
+else:
+    human_black = True
     p2 = gameplay.HumanPlayer(color = False)
 
     if args.level == "easy":
         p1 = gameplay.AIPlayer(color = True, algo = "AB_fail_soft", depth=3)
     elif args.level == "medium":
         p1 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True, depth = 4)
-    elif args.level == "hard":
-        p1 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True)
     else:
-        exit('Invalid level. Please enter "easy", "medium", or "hard"')
-
-else:
-    exit('Invalid player. Please enter "white" or "black"')
+        p1 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True)
 
 
 openai.api_key = data['OPENAI_API_KEY']
@@ -62,4 +59,4 @@ response = openai.ChatCompletion.create(
 message = response.choices[0]['message']
 print(f"Chess tutor for {args.side} player is ready. Have fun!")
 
-gameplay.play_game(p1, p2)
+gameplay.play_game(p1, p2, human_black)
