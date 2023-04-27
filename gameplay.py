@@ -57,10 +57,6 @@ og_pieces = {'p': pygame.image.load(IMAGE_PATH + 'bP.png').convert_alpha(),
 pieces = {k: pygame.transform.scale(v, (SQUARE_SIZE, SQUARE_SIZE)) for k, v in og_pieces.items()}
 
 
-# def get_aspect_size(h):
-#     w = h * 14.0 / 9.0
-#     return w
-
 # Board
 
 # text wrap function:
@@ -276,7 +272,7 @@ class StockfishPlayer():
         self.engine = chess.engine.SimpleEngine.popen_uci(path)
         self.limit = chess.engine.Limit(time=time_limit, depth=depth)
     
-    def get_move(self, board, opponent=False):
+    def get_move(self, board, opponent=True):
         if opponent:
             time.sleep(10)
         result = self.engine.play(board, self.limit)
@@ -494,7 +490,7 @@ def play_game(player1, player2, human_black, board = None):
 
         if isinstance(current_player, HumanPlayer):
 
-            move = current_player.tutor.get_move(board)
+            move = current_player.tutor.get_move(board, opponent=False)
             try:
                 chatGPT_text = get_ChatGPT_response(move, board.turn, str(board))
             except:
@@ -525,8 +521,6 @@ def play_game(player1, player2, human_black, board = None):
                     elif event.type == pygame.VIDEORESIZE:
                         SQUARE_SIZE = SQUARE_SIZE * event.dict['size'][1] / SCREEN_HEIGHT
                         BOARD_OFFSET = SQUARE_SIZE / 2
-                        # SCREEN_HEIGHT = event.dict['size'][1]
-                        # SCREEN_WIDTH = get_aspect_size(SCREEN_HEIGHT)
                         SCREEN_WIDTH, SCREEN_HEIGHT = event.dict['size']
                         pieces = {k: pygame.transform.scale(v, (SQUARE_SIZE, SQUARE_SIZE)) for k, v in og_pieces.items()}
                         scrn = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
@@ -598,7 +592,7 @@ def play_game(player1, player2, human_black, board = None):
                 resign = True
                 break
         else:
-            move = current_player.get_move(board, opponent=True)
+            move = current_player.get_move(board)
             if move == None:
                 print("Game ended.")
                 resign = True
