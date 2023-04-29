@@ -14,9 +14,9 @@ import math
 # blog for gui:
 # CITATION:
 # https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
-X = 1400
-Y = 900
-scrn = pygame.display.set_mode((X, Y), pygame.RESIZABLE)
+SCREEN_WIDTH = 1400
+SCREEN_HEIGHT = 900
+scrn = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
 pygame.init()
 
 #basic colours
@@ -35,22 +35,26 @@ print("Setting up the board")
 
 IMAGE_PATH = "./images/"
 
+SQUARE_SIZE = 100
 BOARD_OFFSET = 50
+BORDER_OFFSET = 6
 
 #load piece images
-pieces = {'p': pygame.image.load(IMAGE_PATH + 'bP.png').convert_alpha(),
-          'n': pygame.image.load(IMAGE_PATH + 'bN.png').convert_alpha(),
-          'b': pygame.image.load(IMAGE_PATH + 'bB.png').convert_alpha(),
-          'r': pygame.image.load(IMAGE_PATH + 'bR.png').convert_alpha(),
-          'q': pygame.image.load(IMAGE_PATH + 'bQ.png').convert_alpha(),
-          'k': pygame.image.load(IMAGE_PATH + 'bK.png').convert_alpha(),
-          'P': pygame.image.load(IMAGE_PATH + 'wP.png').convert_alpha(),
-          'N': pygame.image.load(IMAGE_PATH + 'wN.png').convert_alpha(),
-          'B': pygame.image.load(IMAGE_PATH + 'wB.png').convert_alpha(),
-          'R': pygame.image.load(IMAGE_PATH + 'wR.png').convert_alpha(),
-          'Q': pygame.image.load(IMAGE_PATH + 'wQ.png').convert_alpha(),
-          'K': pygame.image.load(IMAGE_PATH + 'wK.png').convert_alpha(),
-          }
+og_pieces = {'p': pygame.image.load(IMAGE_PATH + 'bP.png').convert_alpha(),
+             'n': pygame.image.load(IMAGE_PATH + 'bN.png').convert_alpha(),
+             'b': pygame.image.load(IMAGE_PATH + 'bB.png').convert_alpha(),
+             'r': pygame.image.load(IMAGE_PATH + 'bR.png').convert_alpha(),
+             'q': pygame.image.load(IMAGE_PATH + 'bQ.png').convert_alpha(),
+             'k': pygame.image.load(IMAGE_PATH + 'bK.png').convert_alpha(),
+             'P': pygame.image.load(IMAGE_PATH + 'wP.png').convert_alpha(),
+             'N': pygame.image.load(IMAGE_PATH + 'wN.png').convert_alpha(),
+             'B': pygame.image.load(IMAGE_PATH + 'wB.png').convert_alpha(),
+             'R': pygame.image.load(IMAGE_PATH + 'wR.png').convert_alpha(),
+             'Q': pygame.image.load(IMAGE_PATH + 'wQ.png').convert_alpha(),
+             'K': pygame.image.load(IMAGE_PATH + 'wK.png').convert_alpha(),
+             }
+
+pieces = {k: pygame.transform.scale(v, (SQUARE_SIZE, SQUARE_SIZE)) for k, v in og_pieces.items()}
 
 
 # Board
@@ -81,7 +85,7 @@ def drawText(surface, text, color, rect, font, aa, bkg):
         while font.size(text[:i])[0] < rect.width and i < len(text):
             i += 1
 
-        # if we've wrapped the text, then adjust the wrap to the last word      
+        # if we've wrapped the text, then adjust the wrap to the last word
         if i < len(text): 
             i = text.rfind(" ", 0, i) + 1
 
@@ -100,31 +104,36 @@ def drawText(surface, text, color, rect, font, aa, bkg):
 
     return text
 
-def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,latest_move = False):
+def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares = None, latest_move = False):
     '''
     updates the screen basis the board class
     '''
+    scrn.fill(BACKGROUND)
+
     # create a font object.
     # 1st parameter is the font file
     # which is present in pygame.
     # 2nd parameter is size of the font
-    font = pygame.font.Font('freesansbold.ttf', 32)
+    font = pygame.font.Font('freesansbold.ttf', math.floor(32 * SCREEN_HEIGHT / 900))
 
-    CHARACTER_LIST = [' A ',' B ',' C ',' D ',' E ',' F ',' G ',' H ']
-    # NUMBER_LIST = ['1','2','3','4','5','6','7','8']
-    NUMBER_LIST = [' 8 ', ' 7 ', ' 6 ', ' 5 ', ' 4 ',' 3 ',' 2 ',' 1 ']
+    CHARACTER_LIST = ['A','B','C','D','E','F','G','H']
+    NUMBER_LIST = ['8','7','6','5','4','3','2','1']
 
     # draw border
-    pygame.draw.rect(scrn, BOARD_OUTLINE, pygame.Rect(BOARD_OFFSET-6, BOARD_OFFSET-6, 812, 812), 5)
+    pygame.draw.rect(scrn, BOARD_OUTLINE, pygame.Rect(BOARD_OFFSET - (SQUARE_SIZE / 100 * BORDER_OFFSET), BOARD_OFFSET - (SQUARE_SIZE / 100 * BORDER_OFFSET),
+                                                      8*SQUARE_SIZE + (2 * SQUARE_SIZE / 100)*BORDER_OFFSET, 8*SQUARE_SIZE + (2 * SQUARE_SIZE / 100)*BORDER_OFFSET), 5)
+
+    if human_black:
+        board = board.transform(chess.flip_vertical).transform(chess.flip_horizontal)
 
     dark_square = True
 
     for i in range(64):
         # draw board squares
         if dark_square:
-            pygame.draw.rect(scrn, DARK_SQUARE, pygame.Rect(BOARD_OFFSET+(i%8)*100, BOARD_OFFSET+700-(i//8)*100, 100, 100))
+            pygame.draw.rect(scrn, DARK_SQUARE, pygame.Rect(BOARD_OFFSET+(i%8)*SQUARE_SIZE, BOARD_OFFSET+(7*SQUARE_SIZE)-(i//8)*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         else:
-            pygame.draw.rect(scrn, LIGHT_SQUARE, pygame.Rect(BOARD_OFFSET+(i%8)*100, BOARD_OFFSET+700-(i//8)*100, 100, 100))
+            pygame.draw.rect(scrn, LIGHT_SQUARE, pygame.Rect(BOARD_OFFSET+(i%8)*SQUARE_SIZE, BOARD_OFFSET+(7*SQUARE_SIZE)-(i//8)*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         if i % 8 != 7:
             dark_square = not dark_square
 
@@ -133,50 +142,60 @@ def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,lates
         if piece == None:
             pass
         else:
-            scrn.blit(pieces[str(piece)],(BOARD_OFFSET+(i%8)*100,BOARD_OFFSET+700-(i//8)*100))
+            scrn.blit(pieces[str(piece)], (BOARD_OFFSET+(i%8)*SQUARE_SIZE, BOARD_OFFSET+(7*SQUARE_SIZE)-(i//8)*SQUARE_SIZE))
     
     # draw letters and numbers
     for i in range(8):
 
         # create a text surface object,
         # on which text is drawn on it.
-        text_letter = font.render(CHARACTER_LIST[i], True, BLACK, WHITE)
+        if human_black:
+            text_letter = font.render(CHARACTER_LIST[7-i], True, BLACK, BACKGROUND)
+        else:
+            text_letter = font.render(CHARACTER_LIST[i], True, BLACK, BACKGROUND)
         
         # create a rectangular object for the
         # text surface object
         textLetterRect = text_letter.get_rect()
         
         # set the center of the rectangular object.
-        textLetterRect.center = (2*BOARD_OFFSET+ i*100 , int(BOARD_OFFSET/2) )
+        textLetterRect.center = (2*BOARD_OFFSET + i*SQUARE_SIZE, int(BOARD_OFFSET/2))
 
         scrn.blit(text_letter, textLetterRect)
 
         # create a text surface object,
         # on which text is drawn on it.
-        text_number = font.render(NUMBER_LIST[i], True, BLACK, WHITE)
+        if human_black:
+            text_number = font.render(NUMBER_LIST[7-i], True, BLACK, BACKGROUND)
+        else:
+            text_number = font.render(NUMBER_LIST[i], True, BLACK, BACKGROUND)
         
         # create a rectangular object for the
         # text surface object
         textNumberRect = text_number.get_rect()
         
         # set the center of the rectangular object.
-        textNumberRect.center = (int(BOARD_OFFSET/2), 2*BOARD_OFFSET+ i*100)
+        textNumberRect.center = (int(BOARD_OFFSET/2), 2*BOARD_OFFSET + i*SQUARE_SIZE)
 
         scrn.blit(text_number, textNumberRect)
 
     # draw lines
     for i in range(7):
-        i=i+1
-        pygame.draw.line(scrn,WHITE,(BOARD_OFFSET+0,BOARD_OFFSET+i*100),(BOARD_OFFSET+800,BOARD_OFFSET+i*100))
-        pygame.draw.line(scrn,WHITE,(BOARD_OFFSET+i*100,BOARD_OFFSET),(BOARD_OFFSET+i*100,BOARD_OFFSET+800))
+        i = i + 1
+        pygame.draw.line(scrn, WHITE, (BOARD_OFFSET+0, BOARD_OFFSET+i*SQUARE_SIZE), (BOARD_OFFSET+(8*SQUARE_SIZE), BOARD_OFFSET+i*SQUARE_SIZE))
+        pygame.draw.line(scrn, WHITE, (BOARD_OFFSET+i*SQUARE_SIZE, BOARD_OFFSET), (BOARD_OFFSET+i*SQUARE_SIZE, BOARD_OFFSET+(8*SQUARE_SIZE)))
 
     if highlight_squares != None:
         if latest_move:
-            for x, y in highlight_squares:
-                pygame.draw.rect(scrn,LATEST_MOVE,pygame.Rect(x,y,100,100),5)
+            for square in highlight_squares:
+                x = BOARD_OFFSET + SQUARE_SIZE * chess.square_file(square)
+                y = BOARD_OFFSET + SQUARE_SIZE * (7 - chess.square_rank(square))
+                pygame.draw.rect(scrn, LATEST_MOVE, pygame.Rect(x, y, SQUARE_SIZE, SQUARE_SIZE), 5)
         else:
-            for x, y in highlight_squares:
-                pygame.draw.rect(scrn,BLUE,pygame.Rect(x,y,100,100),5)
+            for square in highlight_squares:
+                x = BOARD_OFFSET + SQUARE_SIZE * chess.square_file(square)
+                y = BOARD_OFFSET + SQUARE_SIZE * (7 - chess.square_rank(square))
+                pygame.draw.rect(scrn, BLUE, pygame.Rect(x, y, SQUARE_SIZE, SQUARE_SIZE), 5)
 
     # create a text surface object,
     # on which text is drawn on it.
@@ -190,31 +209,54 @@ def update(scrn,board,suggested_move,chatGPT_text,highlight_squares = None,lates
     textLetterRect = text_letter.get_rect()
     
     # set the center of the rectangular object.
-    textLetterRect.center = (2*BOARD_OFFSET+ 10*100 , int(BOARD_OFFSET/2) )
+    textLetterRect.center = (2*BOARD_OFFSET+ 10*SQUARE_SIZE, int(BOARD_OFFSET/2))
 
     # scrn.blit(text_letter, textLetterRect)
 
-    text = drawText(scrn, turn_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2),500,200), font, True, None)
+    text = drawText(scrn, turn_text, BLACK,
+                    pygame.Rect(2*BOARD_OFFSET + 8*SQUARE_SIZE, int(BOARD_OFFSET/2),
+                                math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
+                    font, True, None)
     print(text)
 
     if suggested_move != None and chatGPT_text != None:
 
         stockfish_text = "Stockfish suggestion: {}".format(suggested_move)
 
-        text = drawText(scrn, stockfish_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2)+BOARD_OFFSET,500,200), font, True, None)
+        text = drawText(scrn, stockfish_text, BLACK,
+                        pygame.Rect(2*BOARD_OFFSET + 8*SQUARE_SIZE, int(BOARD_OFFSET/2) + BOARD_OFFSET,
+                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
+                        font, True, None)
         print(text)
 
         intro_text = "ChatGPT's commentary:"
 
-        text = drawText(scrn, intro_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2)+BOARD_OFFSET*2,500,200), font, True, None)
+        text = drawText(scrn, intro_text, BLACK,
+                        pygame.Rect(2*BOARD_OFFSET + 8*SQUARE_SIZE, int(BOARD_OFFSET/2) + BOARD_OFFSET*2,
+                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
+                        font, True, None)
         print(text)
 
         chatGPT_text = "{}".format(chatGPT_text)
 
-        text = drawText(scrn, chatGPT_text, BLACK, pygame.Rect(2*BOARD_OFFSET+ 8*100, int(BOARD_OFFSET/2)+BOARD_OFFSET*3,500,800), font, True, None)
+        text = drawText(scrn, chatGPT_text, BLACK,
+                        pygame.Rect(2*BOARD_OFFSET + 8*SQUARE_SIZE, int(BOARD_OFFSET/2) + BOARD_OFFSET*3,
+                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9 * 6)),
+                        font, True, None)
+        print(text)
+    
+    else:
+
+        sleep_text = "Opponent is thinking..."
+
+        text = drawText(scrn, sleep_text, BLACK,
+                        pygame.Rect(2*BOARD_OFFSET + 8*SQUARE_SIZE, int(BOARD_OFFSET/2) + BOARD_OFFSET,
+                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 18)),
+                        font, True, None)
         print(text)
 
     pygame.display.flip()
+
 
 class RandomPlayer():
     def __init__(self, color = True):
@@ -230,7 +272,9 @@ class StockfishPlayer():
         self.engine = chess.engine.SimpleEngine.popen_uci(path)
         self.limit = chess.engine.Limit(time=time_limit, depth=depth)
     
-    def get_move(self, board):
+    def get_move(self, board, opponent=True):
+        if opponent:
+            time.sleep(10)
         result = self.engine.play(board, self.limit)
         return result.move
     
@@ -406,7 +450,9 @@ def get_ChatGPT_response(current_move, is_white, current_board_string):
     return response_string
 
 
-def play_game(player1, player2, board = None):
+def play_game(player1, player2, human_black, board = None):
+    global SCREEN_WIDTH, SCREEN_HEIGHT, SQUARE_SIZE, BOARD_OFFSET, scrn, pieces
+
     if board == None:
         board = chess.Board()
     game_moves = []
@@ -415,17 +461,19 @@ def play_game(player1, player2, board = None):
 
     print("=================================== START GAME ===================================")
 
-        #make background black
-    scrn.fill(BACKGROUND)
     #name window
     pygame.display.set_caption('Chess')
     
     #variable to be used later
     index_moves = []
-    suggested_move = ""
-    chatGPT_text = ""
-    move_coords = []
-    update(scrn,board,suggested_move,chatGPT_text)
+    if human_black:
+        suggested_move = None
+        chatGPT_text = None
+    else:
+        suggested_move = ""
+        chatGPT_text = ""
+    highlight_squares = []
+    update(scrn, board, suggested_move, chatGPT_text, human_black)
 
     while not board.is_game_over(claim_draw=True):
 
@@ -442,15 +490,14 @@ def play_game(player1, player2, board = None):
 
         if isinstance(current_player, HumanPlayer):
 
-            move = current_player.tutor.get_move(board)
+            move = current_player.tutor.get_move(board, opponent=False)
             try:
                 chatGPT_text = get_ChatGPT_response(move, board.turn, str(board))
             except:
                 chatGPT_text = "ChatGPT has received too many requests. Commentary will resume in a couple moves."
             suggested_move = "{}".format(move)
-            scrn.fill(BACKGROUND)
 
-            update(scrn,board,suggested_move,chatGPT_text,move_coords,latest_move=True)
+            update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares, latest_move=True)
 
             move = None
 
@@ -471,15 +518,24 @@ def play_game(player1, player2, board = None):
                             player2.close_engine()
                         sys.exit(0)
 
+                    elif event.type == pygame.VIDEORESIZE:
+                        SQUARE_SIZE = SQUARE_SIZE * event.dict['size'][1] / SCREEN_HEIGHT
+                        BOARD_OFFSET = SQUARE_SIZE / 2
+                        SCREEN_WIDTH, SCREEN_HEIGHT = event.dict['size']
+                        pieces = {k: pygame.transform.scale(v, (SQUARE_SIZE, SQUARE_SIZE)) for k, v in og_pieces.items()}
+                        scrn = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
+                        update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares, latest_move=True)
+
                     # if mouse clicked
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        #remove previous highlights
-                        scrn.fill(BACKGROUND)
                         #get position of mouse
                         pos = pygame.mouse.get_pos()
 
                         #find which square was clicked and index of it
-                        square = (math.floor((pos[0]-BOARD_OFFSET)/100),math.floor((pos[1]-BOARD_OFFSET)/100))
+                        if human_black:
+                            square = (7 - math.floor((pos[0]-BOARD_OFFSET)/SQUARE_SIZE), 7 - math.floor((pos[1]-BOARD_OFFSET)/SQUARE_SIZE))
+                        else:
+                            square = (math.floor((pos[0]-BOARD_OFFSET)/SQUARE_SIZE), math.floor((pos[1]-BOARD_OFFSET)/SQUARE_SIZE))
                         if square[0] < 0 or square[0] > 7 or square[1] < 0 or square[1] > 7:
                             continue
 
@@ -511,21 +567,20 @@ def play_game(player1, player2, board = None):
                                 #figure out what moves this piece can make
                                 all_moves = list(board.legal_moves)
                                 moves = []
-                                move_coords = []
+                                highlight_squares = []
                                 for m in all_moves:
                                     if m.from_square == index:
                                         
                                         moves.append(m)
 
                                         t = m.to_square
-
-                                        TX1 = 100*(t%8)+BOARD_OFFSET
-                                        TY1 = 100*(7-t//8)+BOARD_OFFSET
+                                        if human_black:
+                                            t = 63 - t
 
                                         #highlight squares it can move to
-                                        move_coords.append((TX1, TY1))
+                                        highlight_squares.append(t)
 
-                                update(scrn,board,suggested_move,chatGPT_text,move_coords)
+                                update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares)
 
                                 index_moves = [a.to_square for a in moves]
             
@@ -551,10 +606,11 @@ def play_game(player1, player2, board = None):
         board.push(move)
 
         square_num = move.to_square
-        move_coords = [(BOARD_OFFSET + 100 * chess.square_file(square_num), BOARD_OFFSET + 100 * (7 - chess.square_rank(square_num)))]
+        if human_black:
+            square_num = 63 - square_num
+        highlight_squares = [square_num]
 
-        scrn.fill(BACKGROUND)
-        update(scrn,board,suggested_move,chatGPT_text,move_coords,latest_move = True)
+        update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares, latest_move = True)
 
         if board.outcome() != None:
             print(board.outcome())
