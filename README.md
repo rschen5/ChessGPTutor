@@ -1,5 +1,5 @@
-# ChessGPT
-Integrating ChatGPT into Chess for move explanations with Stockfish as the engine.
+# ChessGPTutor
+Integrating ChatGPT into chess for move explanations with Stockfish as the engine.
 
 ## Feedback form
 
