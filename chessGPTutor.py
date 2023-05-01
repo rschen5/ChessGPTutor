@@ -3,14 +3,14 @@ import json, argparse, openai
 
 # Parse arguments for human player's side and opponent's level
 parser = argparse.ArgumentParser()
-parser.add_argument("--side", help="which side to play as; options: {white, black}", type=str)
-parser.add_argument("--level", help="level of difficulty of AI opponent; options {easy, medium, hard}", type=str)
+parser.add_argument("--side", help = "which side to play as; options: {white, black}", type = str)
+parser.add_argument("--level", help = "level of difficulty of AI opponent; options {easy, medium, hard}", type = str)
 args = parser.parse_args()
 
 # Exit if arguments are invalid
-if args.side not in ["white","black"]:
+if args.side not in ["white", "black"]:
     exit('Invalid player. Please enter "white" or "black"')
-elif args.level not in ["easy","medium","hard"]:
+elif args.level not in ["easy", "medium", "hard"]:
     exit('Invalid level. Please enter "easy", "medium", or "hard"')
 
 
@@ -30,7 +30,7 @@ if args.side == "white":
 
     if args.level == "easy":
         # Easy opponent - alpha-beta
-        p2 = gp.ABPlayer(color = False, algo = "AB_fail_soft", depth=3)
+        p2 = gp.ABPlayer(color = False, fail_hard = False)
     elif args.level == "medium":
         # Medium opponent - Stockfish
         p2 = gp.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False, depth = 4)
@@ -44,7 +44,7 @@ else:
 
     if args.level == "easy":
         # Easy opponent - alpha-beta
-        p1 = gp.ABPlayer(color = True, algo = "AB_fail_soft", depth=3)
+        p1 = gp.ABPlayer(color = True, fail_hard = False)
     elif args.level == "medium":
         # Medium opponent - Stockfish
         p1 = gp.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True, depth = 4)
