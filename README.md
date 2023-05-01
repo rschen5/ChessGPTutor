@@ -1,5 +1,5 @@
-# ChessGPT
-Integrating ChatGPT into Chess for move explanations with Stockfish as the engine.
+# ChessGPTutor
+Integrating ChatGPT into chess for move explanations with Stockfish as the engine.
 
 ## Feedback form
 
@@ -27,7 +27,7 @@ Run the following command to get the proper requirements:
 pip install -r requirements.txt
 ```
 
-### Running ChessGPT
+### Running ChessGPTutor
 
 ```
 python chessGPT.py --side {white, black} --level {easy, medium, hard}
