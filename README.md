@@ -30,6 +30,8 @@ Run the following command to get the Python libraries needed:
 pip install -r requirements.txt
 ```
 
+Please ensure that your screen supports a 1400 x 900 pixel resolution. On Windows machines this can be adjusted by changing the scale and display resolution in Display Settings.
+
 ### Running ChessGPTutor
 
 ```
