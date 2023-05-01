@@ -84,48 +84,75 @@ pst = {
 
 def is_endgame(board):
     """
-    Pick which piece square table to use for king. End of game starts if:
-        Both sides have no queens or
-        Every side which has a queen has additionally no other pieces or one minorpiece maximum
+    Check if a chess board reflects a game that is almost finished. The end of a game starts if:
+    (1) both sides have no queens, or
+    (2) every side which has a queen has additionally no other pieces or one minorpiece maximum.
+
+    Parameters
+    ----------
+    board : chess.Board
+        Chess board representing the current board state.
+
+    Returns
+    -------
+    bool
+        True if the board reflects a game that is in the end stage, False if not.
     """
     fen_str = board.board_fen()
     if fen_str.lower().count('q') == 0:
         # Both sides have no queen
         return True
     else:
-        # True if side doesn't have a queen
+        # Check if each side has a queen
         white_check = not ('Q' in fen_str)
         black_check = not ('q' in fen_str)
+
         # Check if every side that has a queen has additionally
         # no other pieces or one minor (not king or queen) piece maximum
         if not white_check and sum(int(c.isupper()) for c in fen_str) <= 3:
             white_check = True
         if not black_check and sum(int(c.islower()) for c in fen_str) <= 3:
             black_check = True
+
         return white_check and black_check
 
 def get_board_points(board):
     """
-    Get fixed points for pieces on board + bonus points for piece positions (piece square tables)
-    for each side then take the difference
+    Calculate the heuristic value for a board state.
+
+    Parameters
+    ----------
+    board : chess.Board
+        Chess board representing the current board state.
+
+    Returns
+    -------
+    int
+        The heuristic value for the board state.
     """
+    # Iterate through each non-captured piece on the board
     points_diff = 0
     for square_num, piece in board.piece_map().items():
         symbol = piece.symbol()
+
+        # Sign for total points for the piece - positive if white and negative if black
         if symbol.islower():
             square_num = chess.square_mirror(square_num)
             pts_sign = -1
         else:
             pts_sign = 1
-        
+
+        # Get coordinates of square on board (0-7, 0-7)
         square_coords = (chess.square_file(square_num), chess.square_rank(square_num))
 
+        # Decide the piece-square table to use for the king
         if symbol.upper() == "K":
             if is_endgame(board):
                 symbol += "_end"
             else:
                 symbol += "_middle"
-        
+
+        # Get the piece's total points: fixed piece type points + bonus points for position
         points_diff += pts_sign * pst[symbol.capitalize()][square_coords]
 
     return points_diff
