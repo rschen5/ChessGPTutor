@@ -17,29 +17,30 @@ elif args.level not in ["easy","medium","hard"]:
     exit('Invalid level. Please enter "easy", "medium", or "hard"')
 
 
-import gameplay
+# Start up game window
+import src.gameplay as gp
 
 if args.side == "white":
     human_black = False
-    p1 = gameplay.HumanPlayer(color = True)
+    p1 = gp.HumanPlayer(color = True)
 
     if args.level == "easy":
-        p2 = gameplay.AIPlayer(color = False, algo = "AB_fail_soft", depth=3)
+        p2 = gp.ABPlayer(color = False, algo = "AB_fail_soft", depth=3)
     elif args.level == "medium":
-        p2 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False, depth = 4)
+        p2 = gp.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False, depth = 4)
     else:
-        p2 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False)
+        p2 = gp.StockfishPlayer(path = data['STOCKFISH_PATH'], color = False)
 
 else:
     human_black = True
-    p2 = gameplay.HumanPlayer(color = False)
+    p2 = gp.HumanPlayer(color = False)
 
     if args.level == "easy":
-        p1 = gameplay.AIPlayer(color = True, algo = "AB_fail_soft", depth=3)
+        p1 = gp.ABPlayer(color = True, algo = "AB_fail_soft", depth=3)
     elif args.level == "medium":
-        p1 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True, depth = 4)
+        p1 = gp.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True, depth = 4)
     else:
-        p1 = gameplay.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True)
+        p1 = gp.StockfishPlayer(path = data['STOCKFISH_PATH'], color = True)
 
 
 openai.api_key = data['OPENAI_API_KEY']
@@ -59,4 +60,4 @@ response = openai.ChatCompletion.create(
 message = response.choices[0]['message']
 print(f"Chess tutor for {args.side} player is ready. Have fun!")
 
-gameplay.play_game(p1, p2, human_black)
+gp.play_game(p1, p2, human_black)
