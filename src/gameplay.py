@@ -1,6 +1,7 @@
 from src.search import alpha_beta_fail_hard, alpha_beta_fail_soft
 import chess
 from chess import Move
+import chess.engine
 import chess.svg
 import numpy as np
 import openai, pygame

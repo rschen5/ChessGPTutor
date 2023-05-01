@@ -1,4 +1,5 @@
 # ChessGPTutor
+
 Integrating ChatGPT into chess for move explanations with Stockfish as the engine.
 
 ## Feedback form
@@ -8,7 +9,8 @@ https://docs.google.com/forms/d/e/1FAIpQLSfCVMd_ZQ4gH_0IZCgYvv6H3ZkD-3RKyYfgP_5r
 ## Instructions
 
 ### Requirements:
-This project requires Python 3.7 or higher.
+
+This application requires Python 3.7 or higher.
 * Create an account with OpenAI
 * Download Stockfish here: https://stockfishchess.org/download/
 * Create your own `config.json` file. It should look like this:

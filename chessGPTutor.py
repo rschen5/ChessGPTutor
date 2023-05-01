@@ -1,5 +1,4 @@
 import json, argparse, openai
-import chess.engine
 
 
 # Parse arguments for human player's side and opponent's level
