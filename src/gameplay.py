@@ -703,6 +703,7 @@ def play_game(white_player, black_player, human_black, board = None):
                         SQUARE_SIZE = SQUARE_SIZE * event.dict['size'][1] / SCREEN_HEIGHT
                         BOARD_OFFSET = SQUARE_SIZE / 2
                         SCREEN_WIDTH, SCREEN_HEIGHT = event.dict['size']
+                        # Adjust size of pieces and screen
                         pieces = {k: pygame.transform.scale(v, (SQUARE_SIZE, SQUARE_SIZE)) for k, v in og_pieces.items()}
                         scrn = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.HWSURFACE|pygame.DOUBLEBUF|pygame.RESIZABLE)
                         update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares, latest_move=True)
@@ -714,6 +715,8 @@ def play_game(white_player, black_player, human_black, board = None):
 
                         # Find which square was clicked and its index
                         if human_black:
+                            # Board display is from black's point of view
+                            # Get the square on the board from white's point of view
                             square = (7 - math.floor((pos[0] - BOARD_OFFSET) / SQUARE_SIZE), 7 - math.floor((pos[1] - BOARD_OFFSET) / SQUARE_SIZE))
                         else:
                             square = (math.floor((pos[0] - BOARD_OFFSET) / SQUARE_SIZE), math.floor((pos[1] - BOARD_OFFSET) / SQUARE_SIZE))
@@ -733,8 +736,8 @@ def play_game(white_player, black_player, human_black, board = None):
                             index = None
                             index_moves = []
 
-                        # Show possible moves
                         else:
+                            # Show possible moves
                             # Check the square that is clicked
                             piece = board.piece_at(index)
                             # If empty, pass
@@ -752,6 +755,8 @@ def play_game(white_player, black_player, human_black, board = None):
 
                                         t = m.to_square
                                         if human_black:
+                                            # Board display is from black's point of view
+                                            # Get the square on the board from white's point of view
                                             t = 63 - t
 
                                         # Highlight squares it can move to
@@ -824,12 +829,12 @@ def play_game(white_player, black_player, human_black, board = None):
     print("================================================================")
     print("Moves:\tWHITE\tBLACK\n        -------------")
     for i in range(int(np.ceil(len(game_moves) / 2))):
-        next_moves = game_moves[(i*2):(i*2 + 2)]
+        next_moves = game_moves[(i * 2):(i * 2 + 2)]
         if len(next_moves) == 1:
-            print(f"{i+1:>6}  {next_moves[0]}\n")
+            print(f"{i + 1:>6}  {next_moves[0]}\n")
             f.write(f"{next_moves[0]}")
         else:
-            print(f"{i+1:>6}  {next_moves[0]}\t{next_moves[1]}")
+            print(f"{i + 1:>6}  {next_moves[0]}\t{next_moves[1]}")
             f.write(f"{next_moves[0]},{next_moves[1]}\n")
 
     f.close()
