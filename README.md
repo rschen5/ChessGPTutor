@@ -1,5 +1,10 @@
-# ChessGPT
-Integrating ChatGPT into Chess for move explanations with Stockfish as the engine.
+# ChessGPTutor
+
+Integrating ChatGPT into chess for move explanations with Stockfish as the engine.
+
+## Feedback form
+
+https://docs.google.com/forms/d/e/1FAIpQLSfCVMd_ZQ4gH_0IZCgYvv6H3ZkD-3RKyYfgP_5riiUQDOXdFA/viewform
 
 ## Feedback form
 
@@ -7,7 +12,9 @@ https://docs.google.com/forms/d/e/1FAIpQLSfCVMd_ZQ4gH_0IZCgYvv6H3ZkD-3RKyYfgP_5r
 
 ## Instructions
 
-### Prerequisites:
+### Requirements:
+
+This application requires Python 3.7 or higher.
 * Create an account with OpenAI
 * Download Stockfish here: https://stockfishchess.org/download/
 * Create your own `config.json` file. It should look like this:
@@ -18,29 +25,24 @@ https://docs.google.com/forms/d/e/1FAIpQLSfCVMd_ZQ4gH_0IZCgYvv6H3ZkD-3RKyYfgP_5r
 }
 ```
 
-To run, create a conda environment:
+Create a conda environment:
 ```
-conda create -n ChessEnv python=3.9
+conda create -n ChessEnv python=<python version>
 ```
-Run the following command to get the proper requirements:
+Run the following command to get the Python libraries needed:
 ```
 pip install -r requirements.txt
 ```
 
-### Running ChessGPT
-To run the command-line interface:
+Please ensure that your screen can support a window with a 1400 x 900 pixel resolution. On Windows machines this can be adjusted by changing the scale and display resolution in Display Settings.
+
+### Running ChessGPTutor
+
 ```
-python chessGPT.py --side {white, black} --level {easy, hard}
+python chessGPTutor.py --side {white, black} --level {easy, medium, hard}
 ```
 
-
-## Other
-
-Citation for GUI:
-
-https://github.com/fsmosca/Python-Easy-Chess-GUI/blob/master/python_easy_chess_gui.py
-
-Funny ChatGPT quotes:
+## Funny ChatGPT quotes
 
 ChatGPT commentary: The move f3e5 for White is not possible as there is a piece obstructing the f3 square.
 
