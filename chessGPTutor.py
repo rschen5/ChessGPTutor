@@ -26,7 +26,7 @@ f.close()
 if args.side == "white":
     # Human is the white player
     human_black = False
-    p1 = gp.HumanPlayer(color = True)
+    p1 = gp.HumanPlayer(path = data['STOCKFISH_PATH'], color = True)
 
     if args.level == "easy":
         # Easy opponent - alpha-beta
@@ -40,7 +40,7 @@ if args.side == "white":
 else:
     # Human is the black player
     human_black = True
-    p2 = gp.HumanPlayer(color = False)
+    p2 = gp.HumanPlayer(path = data['STOCKFISH_PATH'], color = False)
 
     if args.level == "easy":
         # Easy opponent - alpha-beta
@@ -58,12 +58,12 @@ model_engine = "gpt-3.5-turbo"
 intro_message = f"You are a chess tutor for a beginner player playing as {args.side}."
 
 response = openai.ChatCompletion.create(
-    model=model_engine,
-    messages=[
+    model = model_engine,
+    messages = [
         {"role": "system", "content": intro_message},
         {"role": "user", "content": "Hello, ChatGPT!"},
     ],
-    max_tokens=100
+    max_tokens = 100
 )
 
 message = response.choices[0]['message']
