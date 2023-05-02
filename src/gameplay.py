@@ -228,47 +228,46 @@ def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squ
     text_letter = font.render(turn_text, True, BLACK, WHITE)
 
     textLetterRect = text_letter.get_rect()
-
     textLetterRect.center = (2*BOARD_OFFSET+ 10*SQUARE_SIZE, int(BOARD_OFFSET/2))
 
-    text = drawText(scrn, turn_text, BLACK,
-                    pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2),
-                                math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
-                    font, True, None)
+    drawText(scrn, turn_text, BLACK,
+             pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2),
+                         math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
+             font, True, None)
 
     if suggested_move != None and chatGPT_text != None:
         # Human player's turn
         # Text object for the move suggestion
         stockfish_text = "Stockfish suggestion: {}".format(suggested_move)
 
-        text = drawText(scrn, stockfish_text, BLACK,
-                        pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET,
-                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
-                        font, True, None)
+        drawText(scrn, stockfish_text, BLACK,
+                 pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET,
+                             math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
+                 font, True, None)
 
         # Text object for the move commentary
         intro_text = "ChatGPT's commentary:"
 
-        text = drawText(scrn, intro_text, BLACK,
-                        pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET * 2,
-                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
-                        font, True, None)
+        drawText(scrn, intro_text, BLACK,
+                 pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET * 2,
+                             math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
+                 font, True, None)
 
         chatGPT_text = "{}".format(chatGPT_text)
 
-        text = drawText(scrn, chatGPT_text, BLACK,
-                        pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET * 3,
-                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9 * 6)),
-                        font, True, None)
+        drawText(scrn, chatGPT_text, BLACK,
+                 pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET * 3,
+                             math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9 * 6)),
+                 font, True, None)
 
     else:
         # Opponent's turn
         sleep_text = "Opponent is thinking..."
 
-        text = drawText(scrn, sleep_text, BLACK,
-                        pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET,
-                                    math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 18)),
-                        font, True, None)
+        drawText(scrn, sleep_text, BLACK,
+                 pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET,
+                             math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 18)),
+                 font, True, None)
 
     pygame.display.flip()
 
@@ -364,8 +363,8 @@ class ABPlayer():
         chess.Move
             Suggested move for a board state.
         """
-        # Pause for 5 seconds
-        time.sleep(5)
+        # Pause for 7 seconds
+        time.sleep(7)
 
         if self.fail_hard:
             moves, _ = alpha_beta_fail_hard(board, self.depth, board.turn)
@@ -648,6 +647,7 @@ def play_game(white_player, black_player, human_black, board = None):
     if isinstance(black_player, StockfishPlayer):
         black_player.close_engine()
 
+    # Print outcome and save game data to file
     outcome = board.outcome()
     if outcome == None:
         if resign:
