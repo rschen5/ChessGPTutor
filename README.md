@@ -1,10 +1,6 @@
 # ChessGPTutor
 
-Integrating ChatGPT into chess for move explanations with Stockfish as the engine.
-
-## Feedback form
-
-https://docs.google.com/forms/d/e/1FAIpQLSfCVMd_ZQ4gH_0IZCgYvv6H3ZkD-3RKyYfgP_5riiUQDOXdFA/viewform
+Integrating ChatGPT into chess for move explanations with Stockfish as the engine - Command Line Interface version.
 
 ## Feedback form
 
@@ -34,9 +30,7 @@ Run the following command to get the Python libraries needed:
 pip install -r requirements.txt
 ```
 
-Please ensure that your screen can support a window with a 1400 x 900 pixel resolution. On Windows machines this can be adjusted by changing the scale and display resolution in Display Settings.
-
-### Running ChessGPTutor
+### Running ChessGPTutor (Command Line Interface version)
 
 ```
 python chessGPTutor.py --side {white, black} --level {easy, medium, hard}
