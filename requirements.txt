@@ -1,11 +1,9 @@
 chess
 openai
 numpy
-regex
 json
 argparse
 pygame
 time
-os
 sys
 math

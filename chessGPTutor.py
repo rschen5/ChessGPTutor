@@ -26,7 +26,7 @@ f.close()
 if args.side == "white":
     # Human is the white player
     human_black = False
-    p1 = gp.HumanPlayer(color = True)
+    p1 = gp.HumanPlayer(path = data['STOCKFISH_PATH'], color = True)
 
     if args.level == "easy":
         # Easy opponent - alpha-beta
@@ -40,7 +40,7 @@ if args.side == "white":
 else:
     # Human is the black player
     human_black = True
-    p2 = gp.HumanPlayer(color = False)
+    p2 = gp.HumanPlayer(path = data['STOCKFISH_PATH'], color = False)
 
     if args.level == "easy":
         # Easy opponent - alpha-beta
