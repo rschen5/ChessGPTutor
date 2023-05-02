@@ -5,7 +5,7 @@ import chess.engine
 import chess.svg
 import numpy as np
 import openai, pygame
-import re, json, time, os, sys, math
+import time, sys, math
 
 
 # Reference for GUI: https://blog.devgenius.io/simple-interactive-chess-gui-in-python-c6d6569f7b6c
@@ -33,7 +33,7 @@ LATEST_MOVE = (120, 148, 84)
 
 # Initialize chess board
 b = chess.Board()
-print("Setting up the board")
+print("Setting up the board...")
 
 # Load piece images
 IMAGE_PATH = "./images/"
@@ -235,7 +235,6 @@ def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squ
                     pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2),
                                 math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
                     font, True, None)
-    print(text)
 
     if suggested_move != None and chatGPT_text != None:
         # Human player's turn
@@ -246,7 +245,6 @@ def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squ
                         pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET,
                                     math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
                         font, True, None)
-        print(text)
 
         # Text object for the move commentary
         intro_text = "ChatGPT's commentary:"
@@ -255,7 +253,6 @@ def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squ
                         pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET * 2,
                                     math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9)),
                         font, True, None)
-        print(text)
 
         chatGPT_text = "{}".format(chatGPT_text)
 
@@ -263,7 +260,6 @@ def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squ
                         pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET * 3,
                                     math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 9 * 6)),
                         font, True, None)
-        print(text)
 
     else:
         # Opponent's turn
@@ -273,7 +269,6 @@ def update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squ
                         pygame.Rect(2 * BOARD_OFFSET + 8 * SQUARE_SIZE, int(BOARD_OFFSET / 2) + BOARD_OFFSET,
                                     math.floor(SCREEN_WIDTH * 5 / 14), math.floor(SCREEN_HEIGHT / 18)),
                         font, True, None)
-        print(text)
 
     pygame.display.flip()
 
@@ -369,6 +364,9 @@ class ABPlayer():
         chess.Move
             Suggested move for a board state.
         """
+        # Pause for 5 seconds
+        time.sleep(5)
+
         if self.fail_hard:
             moves, _ = alpha_beta_fail_hard(board, self.depth, board.turn)
         else:
@@ -385,103 +383,25 @@ class ABPlayer():
 
         return Move.from_uci(current_move)
 
+# Human player has no get_move() method since this is handled by the GUI in play_game()
 class HumanPlayer():
     """
     Human player.
     """
-    def __init__(self, color = True):
+    def __init__(self, path, color = True):
         """
         Initialize player.
 
         Parameters
         ----------
+        path : str
+            Path to the Stockfish engine.
         color : bool, default=True
             True if playing as white, False if playing as black.
         """
         self.color = color
         # AI tutor
-        self.tutor = StockfishPlayer(path = self.__get_path(), color = color)
-
-    def __get_path(self):
-        """
-        Returns the path to the Stockfish engine for the tutor.
-
-        Returns
-        -------
-        str
-            Path to the Stockfish engine.
-        """
-        f = open("./config.json")
-        data = json.load(f)
-        f.close()
-        return data['STOCKFISH_PATH']
-
-    def get_move(self, board):
-        """
-        Get the human player's choice move for a board state using a command-line interface.
-
-        Parameters
-        ----------
-        board : chess.Board
-            Chess board representing the current board state.
-
-        Returns
-        -------
-        chess.Move
-            Suggested move for a board state.
-        """
-        if len(list(board.legal_moves)) == 0:
-            print("No more possible moves.")
-            return None
-
-        while (True):
-            # Print menu
-            print('Note: Please limit tutor requests to 3 per minute')
-            print('Enter one of the following:')
-            print(' - move (ex. d2d4)')
-            print(' - "tutor" to get a hint')
-            print(' - "display" to get an image of the board')
-            print(' - "resign" to end game')
-            # Get menu choice
-            print('Enter choice: ', end="")
-            move = input().strip()
-
-            # Player did not move, passed turn
-            if move[0:2] == move[2:4]:
-                print([move[0:2], move[2:4]])
-                return chess.Move.null()
-
-            print('-----')
-            if move == "resign":
-                # Player resigns
-                return None
-
-            elif move == "display":
-                # Generate SVG of board
-                boardsvg = chess.svg.board(board, size=600, coordinates=True)
-                with open('board.svg', 'w') as outputfile:
-                    outputfile.write(boardsvg)
-                print('Board written to board.svg')
-                time.sleep(0.1)
-                os.startfile('board.svg')
-
-            elif move == "tutor":
-                # Get tutor move suggestion and commentary
-                move = self.tutor.get_move(board)
-                print(f"The tutor's suggested move is {move}")
-                get_ChatGPT_response(move, board.turn, str(board))
-
-            else:
-                # Play move entered by player
-                move = Move.from_uci(move)
-                if move in list(board.legal_moves):
-                    break
-                else:
-                    print(f"{move} is not a legal move.")
-
-            print('---------------')
-
-        return move
+        self.tutor = StockfishPlayer(path, color = color)
 
 
 # Gameplay
@@ -506,66 +426,6 @@ def who(player):
     elif player == chess.BLACK:
         return "BLACK"
     return None
-
-def __convert(c):
-    """
-    Get the formatted string of a board piece for printing to the command line.
-
-    Parameters
-    ----------
-    c : str
-        The piece or an empty space in ASCII format on a chess board.
-
-    Returns
-    -------
-    str
-        Formatted representation of the given piece or empty space for printing.
-    """
-    if c == '.':
-        # Empty space
-        return '..'
-    elif c.islower():
-        # Black piece
-        return f'B{c.upper()}'
-    else:
-        # White piece
-        return f'W{c}'
-
-def print_board(board, is_white):
-    """
-    Print formatted chess board.
-
-    Parameters
-    ----------
-    board : chess.Board
-        Chess board representing the current board state.
-    is_white : bool
-        True if the human player is playing as white, False if playing as black.
-    """
-    fen_str = board.board_fen()
-
-    # Replace numbers in empty spaces with corresponding number of '.' characters
-    for i in range(1, 9):
-        if str(i) in fen_str:
-            fen_str = re.sub(f"{i}", "." * i, fen_str)
-
-    pieces = [list(s) for s in fen_str.split('/')]
-    pieces = [list(map(__convert, l)) for l in pieces]
-
-    print("Current board:\n")
-
-    if is_white:
-        # Print board from the white player's point of view
-        for i in range(8):
-            print(f"{8 - i} | {' '.join(pieces[i])}")
-        print(f"  -------------------------")
-        print("    a  b  c  d  e  f  g  h\n")
-    else:
-        # Print board from the black player's point of view
-        for i in range(8):
-            print(f"{i + 1} | {' '.join(pieces[7 - i][::-1])}")
-        print(f"  -------------------------")
-        print("    h  g  f  e  d  c  b  a\n")
 
 def get_ChatGPT_response(current_move, is_white, current_board_string):
     """
@@ -610,8 +470,6 @@ def get_ChatGPT_response(current_move, is_white, current_board_string):
     if "not possible" in response_string or "illegal" in response_string or "not legal" in response_string or "not valid" in response_string or "invalid" in response_string:
         response_string = "Sorry, I'm having a hard time understanding this move and board."
 
-    print(response_string)
-
     return response_string
 
 def play_game(white_player, black_player, human_black, board = None):
@@ -639,8 +497,6 @@ def play_game(white_player, black_player, human_black, board = None):
 
     resign = False
 
-    print("=================================== START GAME ===================================")
-
     # Name the game window
     pygame.display.set_caption('Chess')
 
@@ -656,12 +512,6 @@ def play_game(white_player, black_player, human_black, board = None):
     update(scrn, board, suggested_move, chatGPT_text, human_black)
 
     while not board.is_game_over(claim_draw=True):
-
-        print("--------------------------------")
-        if isinstance(black_player, HumanPlayer):
-            print_board(board, False)
-        else:
-            print_board(board, True)
 
         if board.turn == white_player.color:
             current_player = white_player
@@ -724,13 +574,10 @@ def play_game(white_player, black_player, human_black, board = None):
                             continue
 
                         index = (7 - square[1]) * 8 + square[0]
-                        print(index)
 
                         if index in index_moves: 
                             # Moving a piece
                             move = moves[index_moves.index(index)]
-
-                            print(move)
 
                             #reset index and moves
                             index = None
@@ -750,9 +597,7 @@ def play_game(white_player, black_player, human_black, board = None):
                                 highlight_squares = []
                                 for m in all_moves:
                                     if m.from_square == index:
-
                                         moves.append(m)
-
                                         t = m.to_square
                                         if human_black:
                                             # Board display is from black's point of view
@@ -770,16 +615,13 @@ def play_game(white_player, black_player, human_black, board = None):
             chatGPT_text = None
 
             if move == None:
-                print("Game ended.")
                 resign = True
                 break
         else:
             move = current_player.get_move(board)
             if move == None:
-                print("Game ended.")
                 resign = True
                 break
-            print(f"{who(current_player.color)} move: {move.uci()}")
 
             suggested_move = ""
             chatGPT_text = ""
@@ -793,10 +635,6 @@ def play_game(white_player, black_player, human_black, board = None):
         highlight_squares = [square_num]
 
         update(scrn, board, suggested_move, chatGPT_text, human_black, highlight_squares, latest_move = True)
-
-        if board.outcome() != None:
-            print(board.outcome())
-            print(board)
 
     # Deactivate the pygame library
     pygame.quit()
@@ -839,5 +677,4 @@ def play_game(white_player, black_player, human_black, board = None):
 
     f.close()
 
-    print("================================== GAME ENDED ==================================")
     print("Game data available at game_data.csv")
